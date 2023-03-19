@@ -1,0 +1,69 @@
+// ==UserScript==
+// @name         ChatGPT 4 Message counter
+// @namespace    http://tampermonkey.net/
+// @version      0.5
+// @description  Counts how often the image with the specified alt text (Most likly Name) appears on the active chat, if it is a GPT 4 Chat
+// @author       AlpSanto Global Momentum LLC
+// @match        https://chat.openai.com/*
+// @grant        none
+// ==/UserScript==
+
+(function() {
+    'use strict';
+
+    // Change the value of 'altText' to match the alt text of the image you want to count
+    const altText = 'Axel Lenz';
+
+    function isGPT4ModelActive() {
+        const modelText = 'Model: GPT-4';
+        return document.body.textContent.includes(modelText);
+    }
+
+    function createCounterElement() {
+        const counter = document.createElement('div');
+        counter.style.position = 'fixed';
+        counter.style.top = '10px';
+        counter.style.right = '10px';
+        counter.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+        counter.style.padding = '5px';
+        counter.style.borderRadius = '5px';
+        counter.style.color = 'white';
+        counter.style.zIndex = '1000';
+        counter.style.fontWeight = 'bold';
+        return counter;
+    }
+
+    function countImages() {
+        const images = document.querySelectorAll(`img[alt="${altText}"]`);
+        return images.length;
+    }
+
+    function updateCounter(counter) {
+        if (!isGPT4ModelActive()) {
+            counter.style.display = 'none';
+            return;
+        }
+        counter.style.display = 'block';
+        const count = countImages();
+        counter.textContent = `Nachrichten: ${count}`;
+    }
+
+    const counterElement = createCounterElement();
+    document.body.appendChild(counterElement);
+    updateCounter(counterElement);
+
+    const observer = new MutationObserver(() => {
+        updateCounter(counterElement);
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: false,
+        characterData: false,
+    });
+
+    window.addEventListener('popstate', () => {
+        updateCounter(counterElement);
+    });
+})();
