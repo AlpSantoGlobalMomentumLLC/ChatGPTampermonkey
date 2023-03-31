@@ -1,0 +1,72 @@
+// ==UserScript==
+// @name WORKING Klick-Automatisierer
+// @namespace http://tampermonkey.net/
+// @version 1.2
+// @description Klickt automatisch auf den "Continue"-Button und erstellt einen benutzerdefinierten Button zum Starten des Klickvorgangs. Für AIPRM Premium for ChatGPT https://chrome.google.com/webstore/detail/aiprm-premium-for-chatgpt/igobiphjicbjloclbknnekkckpbknbeb
+// @author Sie
+// @match https://chat.openai.com/*
+// @grant none
+// ==/UserScript==
+
+// Zeit zwischen den Klicks in Sekunden
+const klickIntervall = 150;
+// Anzahl der Klicks bevor eine Pause eingelegt wird
+const pauseNachKlicks = 20;
+// Dauer der Pause in Minuten
+const pauseDauer = 300;
+// Gesamtanzahl der Klicks, bevor das Skript stoppt
+const gesamtKlickLimit = 60;
+
+// Startverzögerung in Minuten
+const startVerzoegerung = 0;
+
+// Erstellen Sie den benutzerdefinierten Button
+function createButtonElement() {
+  const button = document.createElement('button');
+  button.style.position = 'fixed';
+  button.style.bottom = '10px';
+  button.style.right = '10px'; // Button in der unteren rechten Ecke
+  button.style.backgroundColor = 'red';
+  button.style.padding = '5px';
+  button.style.borderRadius = '5px';
+  button.style.color = 'white';
+  button.style.zIndex = '1000';
+  button.style.fontWeight = 'bold';
+  button.textContent = 'Starten'; // Button-Text geändert
+  return button;
+}
+
+// Fügen Sie den benutzerdefinierten Button zur Seite hinzu
+const button = createButtonElement();
+document.body.appendChild(button);
+
+// Starten Sie den Klickvorgang bei Klick auf den benutzerdefinierten Button
+button.addEventListener('click', starteSkript);
+
+// Starten Sie das Skript bei Klick auf die Schaltfläche "Start"
+function starteSkript() {
+  // Verzögern Sie den Start des Skripts
+  setTimeout(klickeFortsetzenButton, startVerzoegerung * 60 * 1000);
+}
+
+function klickeFortsetzenButton() {
+  // Klicken Sie auf die Schaltfläche "Fortsetzen"
+  document.getElementById("continueWritingButton").click();
+
+  // Überprüfen Sie, ob das Klicklimit erreicht wurde
+  if (++klickZaehler >= gesamtKlickLimit) {
+    return;
+  }
+
+  // Überprüfen Sie, ob eine Pause erforderlich ist
+  if (klickZaehler % pauseNachKlicks == 0) {
+    // Machen Sie eine Pause
+    setTimeout(klickeFortsetzenButton, pauseDauer * 60 * 1000);
+  } else {
+    // Klicken Sie weiter
+    setTimeout(klickeFortsetzenButton, klickIntervall * 1000);
+  }
+}
+
+// Initialisieren Sie den Klickzähler
+let klickZaehler = 0;
